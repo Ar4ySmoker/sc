@@ -1,3 +1,4 @@
+import uuid as _uuid
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, and_
@@ -79,11 +80,12 @@ async def message_history(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    other_uuid = _uuid.UUID(other_user_id)
     result = await db.execute(
         select(Message).where(
             or_(
-                and_(Message.sender_id == current_user.id, Message.receiver_id == other_user_id),
-                and_(Message.sender_id == other_user_id, Message.receiver_id == current_user.id)
+                and_(Message.sender_id == current_user.id, Message.receiver_id == other_uuid),
+                and_(Message.sender_id == other_uuid, Message.receiver_id == current_user.id)
             )
         ).order_by(Message.sent_at.asc())
     )

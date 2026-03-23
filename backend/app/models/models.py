@@ -1,14 +1,13 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Text, Boolean, Integer, ForeignKey, DateTime, Enum
+from sqlalchemy import String, Text, Boolean, Integer, ForeignKey, DateTime, Enum, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
 from app.db.session import Base
 
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(), primary_key=True, default=uuid.uuid4)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -26,11 +25,11 @@ class User(Base):
 class Community(Base):
     __tablename__ = "communities"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     banner_url: Mapped[str | None] = mapped_column(String(500))
-    created_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
+    created_by: Mapped[uuid.UUID] = mapped_column(Uuid(), ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     posts: Mapped[list["Post"]] = relationship("Post", back_populates="community")
@@ -40,9 +39,9 @@ class Community(Base):
 class CommunityMember(Base):
     __tablename__ = "community_members"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    community_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("communities.id"))
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(), primary_key=True, default=uuid.uuid4)
+    community_id: Mapped[uuid.UUID] = mapped_column(Uuid(), ForeignKey("communities.id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid(), ForeignKey("users.id"))
     role: Mapped[str] = mapped_column(String(20), default="member")
     joined_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -53,9 +52,9 @@ class CommunityMember(Base):
 class Post(Base):
     __tablename__ = "posts"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    community_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("communities.id"))
-    author_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(), primary_key=True, default=uuid.uuid4)
+    community_id: Mapped[uuid.UUID] = mapped_column(Uuid(), ForeignKey("communities.id"))
+    author_id: Mapped[uuid.UUID] = mapped_column(Uuid(), ForeignKey("users.id"))
     title: Mapped[str] = mapped_column(String(300), nullable=False)
     content: Mapped[str | None] = mapped_column(Text)
     image_url: Mapped[str | None] = mapped_column(String(500))
@@ -71,10 +70,10 @@ class Post(Base):
 class Comment(Base):
     __tablename__ = "comments"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    post_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("posts.id"))
-    author_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
-    parent_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("comments.id"), nullable=True)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(), primary_key=True, default=uuid.uuid4)
+    post_id: Mapped[uuid.UUID] = mapped_column(Uuid(), ForeignKey("posts.id"))
+    author_id: Mapped[uuid.UUID] = mapped_column(Uuid(), ForeignKey("users.id"))
+    parent_id: Mapped[uuid.UUID | None] = mapped_column(Uuid(), ForeignKey("comments.id"), nullable=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     upvotes: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -88,9 +87,9 @@ class Comment(Base):
 class Vote(Base):
     __tablename__ = "votes"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
-    target_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid(), ForeignKey("users.id"))
+    target_id: Mapped[uuid.UUID] = mapped_column(Uuid())
     target_type: Mapped[str] = mapped_column(String(10))  # "post" or "comment"
     value: Mapped[int] = mapped_column(Integer)  # 1 or -1
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -99,9 +98,9 @@ class Vote(Base):
 class Message(Base):
     __tablename__ = "messages"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    sender_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
-    receiver_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(), primary_key=True, default=uuid.uuid4)
+    sender_id: Mapped[uuid.UUID] = mapped_column(Uuid(), ForeignKey("users.id"))
+    receiver_id: Mapped[uuid.UUID] = mapped_column(Uuid(), ForeignKey("users.id"))
     content: Mapped[str] = mapped_column(Text, nullable=False)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     sent_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
