@@ -1,12 +1,14 @@
 # Unisphere
 
-A social media app. (final yr project)
+A social media website.
 
 ## Tech stack
 
-**Backend**: FastAPI, SQLAlchemy (async), Alembic, PostgreSQL, WebSockets, JWT auth
-**Frontend**: React 18, TypeScript, Tailwind CSS, Zustand, React Router v6, Axios
-**Deployment**: Render (backend + DB) · Cloudflare Pages (frontend)
+**Backend:** FastAPI, SQLAlchemy (async), Alembic, PostgreSQL, WebSockets, JWT auth
+
+**Frontend:** React 18, TypeScript, Tailwind CSS, Zustand, React Router v6, Axios
+
+**Deployment:** Render (backend + DB) · Cloudflare Pages (frontend)
 
 ## Features
 
