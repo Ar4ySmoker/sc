@@ -12,21 +12,27 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [comments, setComments] = useState<Comment[]>([])
   const [tab, setTab] = useState<Tab>('posts')
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetch = async () => {
-      const [uRes, pRes, cRes] = await Promise.all([
-        api.get(`/users/${username}`),
-        api.get(`/users/${username}/posts`),
-        api.get(`/users/${username}/comments`),
-      ])
-      setUser(uRes.data)
-      setPosts(pRes.data)
-      setComments(cRes.data)
+      try {
+        const [uRes, pRes, cRes] = await Promise.all([
+          api.get(`/users/${username}`),
+          api.get(`/users/${username}/posts`),
+          api.get(`/users/${username}/comments`),
+        ])
+        setUser(uRes.data)
+        setPosts(pRes.data)
+        setComments(cRes.data)
+      } catch {
+        setError('Failed to load profile.')
+      }
     }
     fetch()
   }, [username])
 
+  if (error) return <p className="text-red-500 text-sm">{error}</p>
   if (!user) return <p className="text-gray-500">Loading...</p>
 
   return (

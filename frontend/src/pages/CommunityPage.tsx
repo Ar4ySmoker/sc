@@ -12,15 +12,20 @@ export default function CommunityPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [sort, setSort] = useState<'new' | 'top'>('new')
   const [joined, setJoined] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetch = async () => {
-      const [cRes, pRes] = await Promise.all([
-        api.get(`/communities/${name}`),
-        api.get(`/posts/community/${name}?sort=${sort}`),
-      ])
-      setCommunity(cRes.data)
-      setPosts(pRes.data)
+      try {
+        const [cRes, pRes] = await Promise.all([
+          api.get(`/communities/${name}`),
+          api.get(`/posts/community/${name}?sort=${sort}`),
+        ])
+        setCommunity(cRes.data)
+        setPosts(pRes.data)
+      } catch {
+        setError('Failed to load community.')
+      }
     }
     fetch()
   }, [name, sort])
@@ -35,6 +40,7 @@ export default function CommunityPage() {
     setJoined(!joined)
   }
 
+  if (error) return <p className="text-red-500 text-sm">{error}</p>
   if (!community) return <p className="text-gray-500">Loading...</p>
 
   return (

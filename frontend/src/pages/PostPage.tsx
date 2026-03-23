@@ -11,15 +11,20 @@ export default function PostPage() {
   const [post, setPost] = useState<Post | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetch = async () => {
-      const [pRes, cRes] = await Promise.all([
-        api.get(`/posts/${id}`),
-        api.get(`/comments/${id}`),
-      ])
-      setPost(pRes.data)
-      setComments(cRes.data)
+      try {
+        const [pRes, cRes] = await Promise.all([
+          api.get(`/posts/${id}`),
+          api.get(`/comments/${id}`),
+        ])
+        setPost(pRes.data)
+        setComments(cRes.data)
+      } catch {
+        setError('Failed to load post.')
+      }
     }
     fetch()
   }, [id])
@@ -41,6 +46,7 @@ export default function PostPage() {
     setComments((prev) => addReply(prev))
   }
 
+  if (error) return <p className="text-red-500 text-sm">{error}</p>
   if (!post) return <p className="text-gray-500">Loading...</p>
 
   return (
