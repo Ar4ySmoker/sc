@@ -1,6 +1,6 @@
 # Unisphere
 
-A social media website.
+A full-stack social media platform built as my final year project that has communities, threaded posts, voting and real-time DMs.
 
 ## Tech stack
 
