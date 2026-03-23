@@ -8,6 +8,11 @@ python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
 python-dotenv
-pydantic
+pydantic[email]
 pydantic-settings
 websockets
+# test dependencies
+pytest
+pytest-asyncio
+httpx
+aiosqlite
