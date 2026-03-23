@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import api from '../lib/api'
 import { Message, User } from '../types'
 import { useAuthStore } from '../store/authStore'
@@ -7,11 +7,14 @@ import { useWebSocket } from '../hooks/useWebSocket'
 
 export default function MessagesPage() {
   const { userId } = useParams<{ userId?: string }>()
+  const navigate = useNavigate()
   const currentUser = useAuthStore((s) => s.user)
   const [messages, setMessages] = useState<Message[]>([])
   const [conversations, setConversations] = useState<Message[]>([])
+  const [usernames, setUsernames] = useState<Record<string, string>>({})
   const [activeUser, setActiveUser] = useState<User | null>(null)
   const [input, setInput] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const { sendMessage } = useWebSocket((msg) => {
@@ -24,13 +27,37 @@ export default function MessagesPage() {
   })
 
   useEffect(() => {
-    api.get('/messages/conversations').then((res) => setConversations(res.data))
-  }, [])
+    api.get('/messages/conversations')
+      .then((res) => {
+        setConversations(res.data)
+        const otherIds = [...new Set<string>(
+          res.data.map((m: Message) =>
+            m.sender_id === currentUser?.id ? m.receiver_id : m.sender_id
+          )
+        )]
+        Promise.all(otherIds.map((id) => api.get(`/users/${id}`)))
+          .then((results) => {
+            const map: Record<string, string> = {}
+            results.forEach((r) => { map[r.data.id] = r.data.username })
+            setUsernames(map)
+          })
+          .catch(() => {})
+      })
+      .catch(() => setError('Failed to load conversations.'))
+  }, [currentUser?.id])
 
   useEffect(() => {
     if (!userId) return
-    api.get(`/users/${userId}`).then((res) => setActiveUser(res.data))
-    api.get(`/messages/history/${userId}`).then((res) => setMessages(res.data))
+    setError(null)
+    Promise.all([
+      api.get(`/users/${userId}`),
+      api.get(`/messages/history/${userId}`)
+    ])
+      .then(([userRes, msgRes]) => {
+        setActiveUser(userRes.data)
+        setMessages(msgRes.data)
+      })
+      .catch(() => setError('Failed to load messages.'))
   }, [userId])
 
   useEffect(() => {
@@ -56,7 +83,8 @@ export default function MessagesPage() {
         <div className="p-3 border-b border-gray-100">
           <h2 className="font-semibold text-sm text-gray-900">Messages</h2>
         </div>
-        {uniqueUsers.length === 0 && (
+        {error && !userId && <p className="text-xs text-red-500 p-4">{error}</p>}
+        {uniqueUsers.length === 0 && !error && (
           <p className="text-xs text-gray-400 p-4">No conversations yet.</p>
         )}
         {uniqueUsers.map((m) => {
@@ -64,10 +92,12 @@ export default function MessagesPage() {
           return (
             <button
               key={otherId}
-              onClick={() => window.location.href = `/messages/${otherId}`}
+              onClick={() => navigate(`/messages/${otherId}`)}
               className={`w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-50 text-sm ${activeUser?.id === otherId ? 'bg-brand-50' : ''}`}
             >
-              <span className="font-medium text-gray-800">{otherId.slice(0, 8)}...</span>
+              <span className="font-medium text-gray-800">
+                {usernames[otherId] ?? otherId.slice(0, 8) + '...'}
+              </span>
               <p className="text-xs text-gray-500 truncate">{m.content}</p>
             </button>
           )
@@ -77,7 +107,7 @@ export default function MessagesPage() {
       <div className="flex-1 flex flex-col min-w-0">
         {!activeUser ? (
           <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-            Select a conversation
+            {error ?? 'Select a conversation'}
           </div>
         ) : (
           <>
@@ -85,6 +115,7 @@ export default function MessagesPage() {
               {activeUser.username}
             </div>
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+              {error && <p className="text-xs text-red-500 text-center">{error}</p>}
               {messages.map((msg) => {
                 const isMine = msg.sender_id === currentUser?.id
                 return (
