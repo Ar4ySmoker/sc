@@ -86,7 +86,7 @@ export default function HomePage() {
           </div>
         )}
 
-        <div>Привет</div>
+        <div className="text-[30px] font-bold">Привет</div>
       </div>
 
       <aside className="w-64 shrink-0 hidden md:block">
