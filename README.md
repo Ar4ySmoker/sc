@@ -23,6 +23,7 @@ A full-stack social media platform built as my final year project that has commu
 ## Getting Started
 
 ### Prerequisites
+
 - Python 3.11+
 - Node.js 18+
 - PostgreSQL running locally
@@ -34,7 +35,7 @@ cd backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env           
+cp .env.example .env
 alembic upgrade head
 uvicorn app.main:app --reload
 ```
@@ -47,7 +48,7 @@ Swagger docs at `http://localhost:8000/docs`
 ```bash
 cd frontend
 npm install
-cp .env.example .env 
+cp .env.example .env
 npm run dev
 ```
 
@@ -56,18 +57,20 @@ App runs at `http://localhost:5173`
 ## Environment variables
 
 ### Backend `.env`
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string (use `+asyncpg` driver) |
-| `SECRET_KEY` | Random secret for JWT signing |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime (default: 30) |
-| `REFRESH_TOKEN_EXPIRE_DAYS` | Refresh token lifetime (default: 7) |
+
+| Variable                      | Description                                          |
+| ----------------------------- | ---------------------------------------------------- |
+| `DATABASE_URL`                | PostgreSQL connection string (use `+asyncpg` driver) |
+| `SECRET_KEY`                  | Random secret for JWT signing                        |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime (default: 30)                  |
+| `REFRESH_TOKEN_EXPIRE_DAYS`   | Refresh token lifetime (default: 7)                  |
 
 ### Frontend `.env`
-| Variable | Description |
-|---|---|
-| `VITE_API_URL` | Backend base URL |
-| `VITE_WS_URL` | WebSocket base URL (use `ws://` or `wss://`) |
+
+| Variable       | Description                                  |
+| -------------- | -------------------------------------------- |
+| `VITE_API_URL` | Backend base URL                             |
+| `VITE_WS_URL`  | WebSocket base URL (use `ws://` or `wss://`) |
 
 ## Project structure
 
