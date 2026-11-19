@@ -32,13 +32,18 @@ async def create_post(
     await db.refresh(post)
     return post
 
-@router.get("/community/{community_id}", response_model=list[PostOut])
+@router.get("/community/{community_name}", response_model=list[PostOut])
 async def get_community_posts(
-    community_id: str,
+    community_name: str,
     sort: str = "new",
     db: AsyncSession = Depends(get_db)
 ):
-    query = select(Post).where(Post.community_id == community_id).options(selectinload(Post.author))
+    result = await db.execute(select(Community).where(Community.name == community_name))
+    community = result.scalar_one_or_none()
+    if not community:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    query = select(Post).where(Post.community_id == community.id).options(selectinload(Post.author))
     if sort == "top":
         query = query.order_by(Post.upvotes.desc())
     else:

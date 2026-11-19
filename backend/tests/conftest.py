@@ -12,11 +12,6 @@ from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.db.session import Base, get_db
 
-# Swap bcrypt for sha256_crypt to avoid passlib/bcrypt version incompatibilities in tests
-import app.core.security as _security
-from passlib.context import CryptContext
-_security.pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
-
 engine = create_async_engine(
     "sqlite+aiosqlite:///:memory:",
     connect_args={"check_same_thread": False},

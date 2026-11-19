@@ -111,10 +111,10 @@ export default function HomePage() {
             className="block mt-4 text-center bg-brand-600 text-white text-sm py-2 rounded-lg hover:bg-brand-700"
           >
             Create community
-            <div>привет</div>
           </Link>
         </div>
       </aside>
+            <div>привет</div>
     </div>
   );
 }
