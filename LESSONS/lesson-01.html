@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Занятие 1 — Как устроена соцсеть</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #181b23;
+    --panel2: #1f232e;
+    --border: #2a2f3a;
+    --text: #e6e9ef;
+    --muted: #9aa3b2;
+    --accent: #6c8cff;
+    --accent2: #4fd1c5;
+    --warn: #f0b429;
+    --danger: #f26d6d;
+    --good: #4caf7d;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar h1 { font-size: 16px; margin: 0 0 4px; }
+  .sidebar .sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .sidebar nav a {
+    display: block;
+    padding: 7px 10px;
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .sidebar nav a:hover { background: var(--panel2); color: var(--text); text-decoration: none; }
+  .sidebar nav a .t { color: var(--accent2); font-weight: 600; margin-right: 6px; }
+
+  /* Main */
+  .main { padding: 28px 40px 80px; max-width: 920px; }
+  header.hero { margin-bottom: 24px; }
+  header.hero .kicker { color: var(--accent2); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  header.hero h2 { margin: 4px 0 8px; font-size: 26px; }
+  header.hero p { color: var(--muted); margin: 0; }
+
+  /* Timer */
+  .timer-bar {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 16px; margin: 18px 0 30px;
+  }
+  .timer-bar .clock { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+  .timer-bar button {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px;
+  }
+  .timer-bar button:hover { border-color: var(--accent); }
+  .timer-bar button.primary { background: var(--accent); border-color: var(--accent); color: #0f1117; font-weight: 600; }
+
+  /* Sections */
+  section.block {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  section.block.done { opacity: .6; }
+  .block-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .block-head input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--good); cursor: pointer; }
+  .block-head .time {
+    background: var(--accent2); color: #0f1117; font-weight: 700; font-size: 12px;
+    padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+  }
+  .block-head h3 { margin: 0; font-size: 17px; }
+  h4 { margin: 18px 0 8px; font-size: 14px; color: var(--accent2); }
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+
+  code {
+    background: var(--panel2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 1px 6px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 12.5px; color: #c9d4ff;
+  }
+  pre {
+    background: #0b0d13; border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; margin: 10px 0;
+  }
+  pre code { background: none; border: none; padding: 0; color: #d8e0f0; }
+
+  .note {
+    border-left: 3px solid var(--warn); background: rgba(240,180,41,.08);
+    padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0;
+    font-size: 13.5px;
+  }
+  .note.danger { border-left-color: var(--danger); background: rgba(242,109,109,.08); }
+  .note.good { border-left-color: var(--good); background: rgba(76,175,125,.08); }
+
+  .ref { color: var(--muted); font-size: 12.5px; }
+  .ref b { color: var(--accent2); font-weight: 600; }
+
+  details {
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; margin: 8px 0;
+  }
+  details summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+  details[open] summary { margin-bottom: 8px; }
+  details .answer { color: var(--text); }
+
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--accent2); }
+
+  .chip { display: inline-block; background: var(--panel2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; font-size: 12px; margin: 2px 2px 2px 0; }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .main { padding: 20px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <h1>Занятие 1</h1>
+    <div class="sub">«Как устроена соцсеть» · 2 часа</div>
+    <nav>
+      <a href="#goals"><span class="t">◆</span>Цель занятия</a>
+      <a href="#terms"><span class="t">◆</span>Словарь терминов</a>
+      <a href="#partA"><span class="t">A</span>Подготовка учителя</a>
+      <a href="#partB"><span class="t">B</span>Требования к ученикам</a>
+      <a href="#partC"><span class="t">C</span>Строка подключения</a>
+      <a href="#partD"><span class="t">D</span>Поминутный план</a>
+      <a href="#partE"><span class="t">E</span>Про общую БД</a>
+      <a href="#partF"><span class="t">F</span>Мини-квиз</a>
+      <a href="#partG"><span class="t">G</span>Подводные камни</a>
+      <a href="#partH"><span class="t">H</span>Переход к публикации</a>
+      <a href="#next"><span class="t">◆</span>Занятия 2–3</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="hero">
+      <div class="kicker">Шпаргалка учителя</div>
+      <h2>Занятие 1 — Как устроена соцсеть</h2>
+      <p>Формат: изучаем готовый код, а не пишем его. Учитель показывает и объясняет, ученики смотрят код и пробуют в Swagger.</p>
+    </header>
+
+    <div class="timer-bar">
+      <div class="clock" id="clock">00:00</div>
+      <button id="btnStart" class="primary">Старт</button>
+      <button id="btnPause">Пауза</button>
+      <button id="btnReset">Сброс</button>
+    </div>
+
+    <!-- GOALS -->
+    <section class="block" id="goals">
+      <div class="block-head">
+        <input type="checkbox" data-id="goals">
+        <h3>Цель занятия</h3>
+      </div>
+      <p>К концу урока каждый ученик:</p>
+      <ul>
+        <li>понимает, из чего состоит full-stack проект (клиент → сервер → БД);</li>
+        <li>умеет запустить бэкенд и открыть Swagger-документацию;</li>
+        <li>разбирается в модели данных (таблицы и связи);</li>
+        <li>понимает, как работает JWT-авторизация (пароль → хеш → токен → запрос);</li>
+        <li>умеет «читать» роутер: endpoint → схема → модель → БД.</li>
+      </ul>
+    </section>
+
+    <!-- TERMS -->
+    <section class="block" id="terms">
+      <div class="block-head">
+        <input type="checkbox" data-id="terms">
+        <h3>Словарь терминов</h3>
+      </div>
+      <ul>
+        <li><b>Клиент</b> — то, что видит пользователь (браузер, React-приложение).</li>
+        <li><b>Сервер</b> — программа, принимающая запросы и отдающая данные (FastAPI).</li>
+        <li><b>База данных (БД)</b> — место, где данные хранятся (PostgreSQL).</li>
+        <li><b>API / endpoint</b> — конкретный адрес + метод, например <code>POST /auth/login</code>.</li>
+        <li><b>JSON</b> — текстовый формат обмена данными между клиентом и сервером.</li>
+        <li><b>Токен (JWT)</b> — «пропуск», которым клиент доказывает серверу, кто он.</li>
+      </ul>
+    </section>
+
+    <!-- PART A -->
+    <section class="block" id="partA">
+      <div class="block-head">
+        <input type="checkbox" data-id="partA">
+        <h3>Часть A · Подготовка учителя</h3>
+      </div>
+      <div class="ref">Разово, ДО занятия. Делается на твоём ноутбуке, где стоит PostgreSQL.</div>
+
+      <div class="note good">
+        <b>Статус на сейчас (проверено автоматически):</b><br>
+        ✅ Пользователь <code>kiberone</code> и база <code>unisphere</code> уже созданы.<br>
+        ✅ Миграции уже прогнаны (таблицы <code>users</code>, <code>posts</code>, <code>comments</code> и др. существуют).<br>
+        ✅ Postgres 16 слушает сеть (<code>listen_addresses = '*'</code>).<br>
+        ✅ Firewall: порт 5432 открыт (правило <code>PostgreSQL 5432</code>).<br>
+        ❌ <b>Остался один шаг — добавить правило в <code>pg_hba.conf</code> (A.2, Шаг 2).</b> Без него Postgres отклоняет удалённые подключения.
+      </div>
+      <div class="ref">Значения: пользователь <code>kiberone</code>, пароль <code>kiberpassword</code>, база <code>unisphere</code>, IP <code>192.168.0.145</code>, порт <code>5432</code>.</div>
+
+      <details>
+        <summary>Шпаргалка понятий (чтобы уверенно объяснять)</summary>
+        <div class="answer">
+          <ul>
+            <li><b>psql</b> — консольный клиент PostgreSQL: вводишь SQL-команды и сразу видишь результат.</li>
+            <li><b>Роль (role) = пользователь БД</b>. <code>postgres</code> — главный (суперпользователь), создаётся при установке; его пароль ты задавал тогда же.</li>
+            <li><b>База данных</b> — отдельное хранилище со своими таблицами. У нас будет база <code>unisphere</code>.</li>
+            <li><b>OWNER (владелец)</b> — пользователь, которому база принадлежит и который может в ней всё.</li>
+            <li><b>Строка подключения</b> — адрес, по которому приложение находит БД: <code>postgresql+asyncpg://пользователь:пароль@хост:порт/база</code>.</li>
+            <li><b>pg_hba.conf</b> — файл правил «кто и откуда может подключаться». <code>scram-sha-256</code> = вход по паролю (современный метод); <code>trust</code> = без пароля (опасно, только временно).</li>
+            <li><b>listen_addresses</b> — на каких интерфейсах Postgres слушает. <code>*</code> = на всех, чтобы ученики по Wi-Fi могли подключиться.</li>
+          </ul>
+        </div>
+      </details>
+
+      <h4>A.1 Создать базу и пользователя</h4>
+      <div class="note good">✅ Уже сделано. Ниже — как это делалось (на случай пересоздания на другом ПК).</div>
+      <p>Зачем: заводим отдельного пользователя <code>kiberone</code> и его базу <code>unisphere</code>, чтобы не работать под суперпользователем <code>postgres</code>.</p>
+
+      <details>
+        <summary>Пошагово (развёрнуто)</summary>
+        <div class="answer">
+          <p><b>Шаг 1 — найти psql.</b> Он лежит в папке установки. Узнай версию:</p>
+          <pre><code>Get-ChildItem "C:\Program Files\PostgreSQL"</code></pre>
+          <p>Увидишь папку с номером (например <code>16</code>). Тогда <code>psql</code> находится в:</p>
+          <pre><code>C:\Program Files\PostgreSQL\16\bin\psql.exe</code></pre>
+
+          <p><b>Шаг 2 — подключиться от имени postgres.</b> В PowerShell (обычном):</p>
+          <pre><code>& "C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres -h localhost</code></pre>
+          <p>Появится <code>Password for user postgres:</code> — вводишь пароль, заданный при установке Postgres (символы при вводе не видны, это нормально).</p>
+
+          <p><b>Шаг 3 — выполнить SQL.</b> После появления приглашения <code>postgres=#</code> вставь по одной команде:</p>
+          <pre><code>CREATE USER kiberone WITH PASSWORD 'kiberpassword';
+CREATE DATABASE unisphere OWNER kiberone;</code></pre>
+          <p>Пароль уже вписан — <code>kiberpassword</code> (он же используется в строке подключения).</p>
+
+          <p><b>Шаг 4 — проверить.</b></p>
+          <pre><code>\du   -- список пользователей: должен появиться kiberone
+\l    -- список баз: должна появиться unisphere</code></pre>
+
+          <p><b>Шаг 5 — выйти.</b></p>
+          <pre><code>\q</code></pre>
+        </div>
+      </details>
+
+      <details>
+        <summary>Частые проблемы на A.1</summary>
+        <div class="answer">
+          <ul>
+            <li><b>«psql не распознан как команда»</b> — используй полный путь через <code>& "C:\Program Files\...\psql.exe"</code>.</li>
+            <li><b>Забыл пароль postgres</b> — сброс через <code>pg_hba.conf</code>: временно поменяй строку <code>host all all 127.0.0.1/32 scram-sha-256</code> на <code>trust</code>, перезапусти службу, зайди и задай новый пароль: <code>ALTER USER postgres PASSWORD 'новый_пароль';</code>, потом верни <code>scram-sha-256</code> и снова перезапусти.</li>
+            <li><b>«Connection refused» на localhost</b> — служба не запущена: <code>Get-Service *postgres*</code>, затем <code>Start-Service postgresql-x64-16</code>.</li>
+            <li><b>«role "postgres" does not exist»</b> — в SQL имя всегда <code>postgres</code> (заглавные только в названии службы).</li>
+          </ul>
+        </div>
+      </details>
+
+      <h4>A.2 Разрешить Postgres слушать сеть</h4>
+      <div class="note">Шаг 1 (<code>listen_addresses</code>) ✅ сделан. Шаг 2 (<code>pg_hba.conf</code>) ❗ ещё нужно сделать.</div>
+      <p>Зачем: по умолчанию Postgres пускает только с этого же компьютера. Нам нужно, чтобы ученики по Wi-Fi тоже могли подключиться.</p>
+
+      <details>
+        <summary>Пошагово (развёрнуто)</summary>
+        <div class="answer">
+          <p><b>Шаг 1</b> — открой файл <code>postgresql.conf</code> (нужны права админа):</p>
+          <pre><code>notepad "C:\Program Files\PostgreSQL\16\data\postgresql.conf"</code></pre>
+          <p>Найди строку <code>listen_addresses</code> (она может начинаться с <code>#</code>). Убери <code>#</code> и сделай так:</p>
+          <pre><code>listen_addresses = '*'</code></pre>
+
+          <p><b>Шаг 2</b> — в том же каталоге открой <code>pg_hba.conf</code>:</p>
+          <pre><code>notepad "C:\Program Files\PostgreSQL\16\data\pg_hba.conf"</code></pre>
+          <p>В конец файла добавь строку:</p>
+          <pre><code>host  all  all  0.0.0.0/0  scram-sha-256</code></pre>
+          <p>Это разрешает подключаться с любого адреса по паролю. Безопаснее — указать только вашу подсеть Wi-Fi (например <code>192.168.0.0/24</code> вместо <code>0.0.0.0/0</code>).</p>
+
+          <p><b>Шаг 3</b> — сохрани оба файла. Изменения вступят в силу после перезапуска службы (шаг A.4).</p>
+        </div>
+      </details>
+
+      <h4>A.3 Открыть порт в Windows Firewall (от администратора)</h4>
+      <div class="note good">✅ Уже сделано (правило <code>PostgreSQL 5432</code> включено). Ниже — как это делалось.</div>
+      <p>Зачем: Windows-брандмауэр по умолчанию блокирует входящие подключения к порту 5432.</p>
+      <p>Открой PowerShell <b>от имени администратора</b> и выполни:</p>
+      <pre><code>netsh advfirewall firewall add rule name="PostgreSQL 5432" dir=in action=allow protocol=TCP localport=5432</code></pre>
+
+      <h4>A.4 Перезапустить службу и узнать свой IP</h4>
+      <pre><code>Restart-Service postgresql-x64-16
+ipconfig</code></pre>
+      <p>В выводе <code>ipconfig</code> найди <code>IPv4-адрес</code> адаптера Wi-Fi (у тебя сейчас <code>192.168.0.145</code>) — это адрес, который получат ученики.</p>
+
+      <h4>A.5 Прогнать миграции ОДИН раз (только учитель!)</h4>
+      <div class="note good">✅ Уже сделано (все таблицы созданы).</div>
+      <pre><code>cd backend
+.venv\Scripts\activate
+alembic upgrade head</code></pre>
+      <div class="note danger"><b>Важно:</b> <code>alembic upgrade head</code> запускает <b>только учитель</b> — таблицы в общей БД создаются один раз. Ученики лишь подключаются.</div>
+      <p>Перед этим в <code>backend/.env</code> должна быть строка <code>DATABASE_URL=postgresql+asyncpg://kiberone:kiberpassword@localhost:5432/unisphere</code>.</p>
+
+      <h4>A.6 Проверить связь заранее</h4>
+      <p>С телефона/другого ноутбука в той же сети:</p>
+      <pre><code>Test-NetConnection 192.168.0.145 -Port 5432</code></pre>
+      <div class="note good">Должно быть <code>TcpTestSucceeded : True</code> — это проверка, что Wi-Fi не режет связь «клиент ↔ клиент» (client isolation).</div>
+
+      <h4>A.7 Демо-окружение</h4>
+      <p>У тебя должны быть запущены и бэкенд (<code>uvicorn app.main:app --reload</code>), и фронтенд (<code>npm run dev</code>), чтобы показать готовую соцсеть в первые 10 минут.</p>
+    </section>
+
+    <!-- PART B -->
+    <section class="block" id="partB">
+      <div class="block-head">
+        <input type="checkbox" data-id="partB">
+        <h3>Часть B · Требования к ученикам</h3>
+      </div>
+      <ul>
+        <li>Установлены Python 3.11+ и Git.</li>
+        <li>Склонирован репозиторий.</li>
+        <li>В <code>backend</code> создано виртуальное окружение: <code>python -m venv .venv</code>.</li>
+        <li>Установлены зависимости: <code>pip install -r requirements.txt</code>.</li>
+        <li>Скопирован <code>backend/.env.example</code> → <code>backend/.env</code> (значения уже предзаполнены).</li>
+      </ul>
+    </section>
+
+    <!-- PART C -->
+    <section class="block" id="partC">
+      <div class="block-head">
+        <input type="checkbox" data-id="partC">
+        <h3>Часть C · Строка подключения (общая БД)</h3>
+      </div>
+      <p>В файле <code>backend/.env.example</code> строка уже <b>предзаполнена</b> — ученикам ничего вписывать не надо. Они просто копируют:</p>
+      <pre><code>DATABASE_URL=postgresql+asyncpg://kiberone:kiberpassword@192.168.0.145:5432/unisphere
+SECRET_KEY=1RehJ3WLBcwvMHsmAgnbfXq9xGpKuoyZad2USIPj5E6Vl7YkrztD4OCFN8iT0Q</code></pre>
+      <p class="ref"><b>192.168.0.145</b> — IP-адрес ноутбука учителя из шага A.4.</p>
+    </section>
+
+    <!-- PART D -->
+    <section class="block" id="partD">
+      <div class="block-head">
+        <input type="checkbox" data-id="partD">
+        <h3>Часть D · Поминутный план</h3>
+      </div>
+
+      <h4>0:00–0:10 · Вводная и демо</h4>
+      <ul>
+        <li>Что строим: соцсеть «Unisphere». Что будет в конце курса (регистрация → лента → посты → комментарии).</li>
+        <li><b>Демо вживую</b>: открыть фронтенд и показать весь сценарий.</li>
+        <li>Ввести словарь терминов.</li>
+      </ul>
+
+      <h4>0:10–0:25 · Архитектура и структура проекта</h4>
+      <ul>
+        <li>На доске: <b>Браузер (React) ↔ REST API (FastAPI) ↔ БД (PostgreSQL)</b>.</li>
+        <li>Пройтись по дереву папок (<code>README.md</code> + реальные каталоги):
+          <span class="chip">backend/app/core</span><span class="chip">db</span><span class="chip">models</span><span class="chip">schemas</span><span class="chip">routers</span><span class="chip">frontend/src/pages</span><span class="chip">components</span><span class="chip">store</span><span class="chip">lib</span>
+        </li>
+        <li>Идея: <b>каждый endpoint = путь + метод</b>, например <code>POST /auth/login</code>.</li>
+      </ul>
+
+      <h4>0:25–0:40 · Запуск бэкенда (все делают у себя)</h4>
+      <pre><code>cd backend
+.venv\Scripts\activate
+cp .env.example .env      # значения уже вписаны, менять ничего не надо
+uvicorn app.main:app --reload</code></pre>
+      <ul>
+        <li>Открыть <code>http://localhost:8000/docs</code> — это <b>Swagger</b> (готовый список всех API).</li>
+        <li>Разобрать <code>backend/app/core/config.py:3</code> — класс <code>Settings</code> читает <code>.env</code>. Зачем <code>.env</code>: секреты не коммитим.</li>
+        <li>Разобрать <code>backend/app/db/session.py:5</code> — движок БД, <code>Base</code>, <code>get_db()</code>.</li>
+        <li><code>alembic</code> ученикам <b>не нужен</b> — БД уже создана и прогнана миграциями.</li>
+      </ul>
+
+      <h4>0:40–1:05 · Модель данных (сердце занятия)</h4>
+      <ul>
+        <li>Читаем <code>backend/app/models/models.py</code>, рисуем схему таблиц и связи.</li>
+      </ul>
+      <table>
+        <tr><th>Модель</th><th>Строка</th><th>Ключевые поля</th></tr>
+        <tr><td>User</td><td><code>:7</code></td><td>id (UUID), username, email, password_hash, avatar_url, bio</td></tr>
+        <tr><td>Community</td><td><code>:25</code></td><td>name, description, created_by</td></tr>
+        <tr><td>CommunityMember</td><td><code>:39</code></td><td>community_id, user_id, role (многие-ко-многим)</td></tr>
+        <tr><td>Post</td><td><code>:52</code></td><td>title, content, image_url, upvotes/downvotes, FK community_id/author_id</td></tr>
+        <tr><td>Comment</td><td><code>:70</code></td><td>content, parent_id (ссылается сам на себя)</td></tr>
+        <tr><td>Vote</td><td><code>:87</code></td><td>target_id/target_type, value (+1/−1)</td></tr>
+        <tr><td>Message</td><td><code>:98</code></td><td>sender_id, receiver_id, content, is_read</td></tr>
+      </table>
+      <p>Три ключевых понятия (показать прямо в коде):</p>
+      <ol>
+        <li><code>mapped_column</code> — колонка таблицы: <code>primary_key=True</code>, <code>ForeignKey(...)</code>, <code>unique=True</code>.</li>
+        <li><code>relationship</code> + <code>back_populates</code> — связь между объектами Python (не колонка), например <code>Post.author</code>.</li>
+        <li><code>default=...</code> — значение подставляется автоматически (<code>uuid.uuid4</code>, <code>datetime.utcnow</code>).</li>
+      </ol>
+      <p>Подкрепить: миграция <code>backend/alembic/versions/271319331f7b_initial_tables.py</code> — как модели превращаются в реальные таблицы (<code>op.create_table('posts', ...)</code>).</p>
+
+      <h4>1:05–1:25 · Авторизация JWT</h4>
+      <p>Сначала логика без кода: логин/пароль → сверка хеша → выдача <b>JWT</b> → клиент шлёт токен в <code>Authorization: Bearer ...</code> → сервер по токену понимает, кто это.</p>
+      <ul>
+        <li><code>backend/app/core/security.py</code>:
+          <ul>
+            <li><code>hash_password</code> (<code>:6</code>) — пароль никогда не храним открытым, только bcrypt-хеш.</li>
+            <li><code>verify_password</code> (<code>:9</code>) — сверяем введённый пароль с хешем.</li>
+            <li><code>create_access_token</code> (<code>:12</code>) — подписанный токен с <code>exp</code>.</li>
+            <li><code>decode_token</code> (<code>:24</code>) — проверяем подпись и читаем данные.</li>
+          </ul>
+        </li>
+        <li><code>backend/app/core/deps.py:13</code> — <code>get_current_user</code>: токен из заголовка → декод → поиск пользователя; иначе <code>401</code>.</li>
+        <li><code>backend/app/routers/auth.py</code>:
+          <ul>
+            <li><code>register</code> (<code>:12</code>) — проверка занятых email/username → хеш → сохранить.</li>
+            <li><code>login</code> (<code>:32</code>) — сверка пароля → <code>access_token</code> + <code>refresh_token</code>.</li>
+            <li><code>me</code> (<code>:43</code>) — «кто я?» по токену.</li>
+          </ul>
+        </li>
+        <li>Схемы <code>backend/app/schemas/schemas.py</code>: <code>RegisterRequest</code> (<code>:6</code>), <code>LoginRequest</code> (<code>:11</code>), <code>TokenResponse</code> (<code>:15</code>), <code>UserOut</code> (<code>:20</code> — в ответе <b>нет</b> <code>password_hash</code>).</li>
+      </ul>
+      <div class="note">Где путаются ученики:<br>
+        1. <code>password</code> (вводит пользователь) ≠ <code>password_hash</code> (хранится в БД).<br>
+        2. <code>access_token</code> (короткий, для запросов) vs <code>refresh_token</code> (долгий, для обновления).<br>
+        3. <code>async/await</code> и <code>Depends</code> — пока упрощённо: «FastAPI сам подставляет зависимости».
+      </div>
+
+      <h4>1:25–1:50 · Практика в Swagger (без кода)</h4>
+      <p>Каждый ученик сам в <code>http://localhost:8000/docs</code>:</p>
+      <ol>
+        <li><code>POST /auth/register</code> — создать пользователя (в ответе нет пароля).</li>
+        <li><code>POST /auth/login</code> — получить <code>access_token</code> и <code>refresh_token</code>.</li>
+        <li><code>GET /auth/me</code> <b>без</b> токена → <code>401</code> (обсудить почему).</li>
+        <li><code>GET /auth/me</code> <b>с</b> токеном (Authorize → <code>Bearer &lt;токен&gt;</code>) → вернулся профиль.</li>
+        <li>Создать сообщество <code>POST /communities/</code> и пост <code>POST /posts/{community_id}</code> — увидеть связку «сначала сообщество, потом пост».</li>
+      </ol>
+
+      <h4>1:50–2:00 · Итоги и мини-квиз</h4>
+      <p>См. Часть F.</p>
+    </section>
+
+    <!-- PART E -->
+    <section class="block" id="partE">
+      <div class="block-head">
+        <input type="checkbox" data-id="partE">
+        <h3>Часть E · Про общую БД (2–3 минуты, в блоке запуска)</h3>
+      </div>
+      <ul>
+        <li>У всех <b>одна</b> база → уникальные <code>username</code>/<code>email</code>. Конфликт — повод объяснить ошибку 400 «Username already taken».</li>
+        <li>«Клиент подключается к серверу БД по <code>IP:порт</code>» — мостик к тому, как это работает в интернете (там хост даст облако).</li>
+      </ul>
+    </section>
+
+    <!-- PART F -->
+    <section class="block" id="partF">
+      <div class="block-head">
+        <input type="checkbox" data-id="partF">
+        <h3>Часть F · Мини-квиз (с ответами)</h3>
+      </div>
+
+      <details>
+        <summary>1. Где хранятся пароли и почему их не видно в ответе API?</summary>
+        <div class="answer">В БД лежит только bcrypt-хеш (<code>password_hash</code>), а схема <code>UserOut</code> не содержит это поле — поэтому в JSON пароль/хеш не попадает.</div>
+      </details>
+
+      <details>
+        <summary>2. Что произойдёт, если вызвать /auth/me без токена, и почему?</summary>
+        <div class="answer">Ответ <code>401 Unauthorized</code>: <code>get_current_user</code> (<code>deps.py:13</code>) не найдёт токен → поднимет исключение.</div>
+      </details>
+
+      <details>
+        <summary>3. Чем Post.author (relationship) отличается от Post.author_id (колонка)?</summary>
+        <div class="answer"><code>author_id</code> — реальная колонка с внешним ключом в БД; <code>author</code> — ссылка на объект <code>User</code> в Python, которую SQLAlchemy заполняет автоматически.</div>
+      </details>
+
+      <details>
+        <summary>4. Что такое UUID и зачем его использовать вместо автоинкремента 1, 2, 3?</summary>
+        <div class="answer">Глобально уникальный идентификатор; не раскрывает порядок/количество записей, удобно при распределённой системе (несколько серверов не конфликтуют за id).</div>
+      </details>
+
+      <details>
+        <summary>5. Зачем нужен файл .env?</summary>
+        <div class="answer">Хранить конфигурацию и секреты (пароль БД, <code>SECRET_KEY</code>) вне кода, чтобы не коммитить их в git.</div>
+      </details>
+    </section>
+
+    <!-- PART G -->
+    <section class="block" id="partG">
+      <div class="block-head">
+        <input type="checkbox" data-id="partG">
+        <h3>Часть G · Подводные камни</h3>
+      </div>
+      <div class="note danger"><b>Client isolation на Wi-Fi</b> — если шаг A.6 не проходит, ученики не достучатся до БД. Варианты: другой роутер, мобильная точка доступа, или сразу облачная БД.</div>
+      <div class="note danger"><b>Ноутбук учителя — точка отказа</b> — если он уснул/ушёл из сети, у всех падает БД.</div>
+      <div class="note"><b>Пароль БД в .env учеников</b> — нормально для учебной базы; перед публикацией сменим на облачную и пароль уберём из раздачи.</div>
+    </section>
+
+    <!-- PART H -->
+    <section class="block" id="partH">
+      <div class="block-head">
+        <input type="checkbox" data-id="partH">
+        <h3>Часть H · Переход к публикации (потом, не сейчас)</h3>
+      </div>
+      <p>Создаём облачную Postgres (Render/Neon) → меняем только <code>DATABASE_URL</code> → переносим данные (<code>pg_dump</code> → <code>pg_restore</code>). Код приложения не трогаем.</p>
+    </section>
+
+    <!-- NEXT -->
+    <section class="block" id="next">
+      <div class="block-head">
+        <input type="checkbox" data-id="next">
+        <h3>Что дальше (занятия 2–3)</h3>
+      </div>
+      <ul>
+        <li><b>Занятие 2:</b> бэкенд — посты и комментарии (<code>posts.py</code>, <code>comments.py</code>); фронтенд — вход/регистрация (<code>LoginPage</code>, <code>RegisterPage</code>, <code>authStore</code>, <code>api.ts</code>, <code>ProtectedRoute</code>).</li>
+        <li><b>Занятие 3:</b> фронтенд — лента (<code>HomePage</code>), создание поста (<code>CreatePostPage</code>), пост + комментарии (<code>PostPage</code>).</li>
+      </ul>
+    </section>
+  </main>
+</div>
+
+<script>
+  // Checkbox persistence
+  const boxes = document.querySelectorAll('input[type=checkbox][data-id]');
+  const KEY = 'lesson1-progress';
+  const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+
+  boxes.forEach(box => {
+    box.checked = !!saved[box.dataset.id];
+    if (box.checked) box.closest('section.block').classList.add('done');
+    box.addEventListener('change', () => {
+      saved[box.dataset.id] = box.checked;
+      localStorage.setItem(KEY, JSON.stringify(saved));
+      box.closest('section.block').classList.toggle('done', box.checked);
+    });
+  });
+
+  // Timer
+  const clock = document.getElementById('clock');
+  let seconds = 0, timer = null;
+  function fmt(s) {
+    const m = String(Math.floor(s / 60)).padStart(2, '0');
+    const sec = String(s % 60).padStart(2, '0');
+    return m + ':' + sec;
+  }
+  function start() { if (timer) return; timer = setInterval(() => { seconds++; clock.textContent = fmt(seconds); }, 1000); }
+  function pause() { clearInterval(timer); timer = null; }
+  function reset() { pause(); seconds = 0; clock.textContent = fmt(0); }
+  document.getElementById('btnStart').addEventListener('click', start);
+  document.getElementById('btnPause').addEventListener('click', pause);
+  document.getElementById('btnReset').addEventListener('click', reset);
+</script>
+</body>
+</html>
